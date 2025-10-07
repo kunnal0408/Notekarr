@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Notekarr — Notes & Assignments Service</title>
+  <style>
+    :root{
+      --accent:#0b74de;
+      --muted:#666;
+      --card:#ffffff;
+      --bg:#f4f7fb;
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:#222;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+    header{
+      background: linear-gradient(90deg,#0b74de 0%, #0b58c8 100%);
+      color:#fff;
+      padding:32px 20px;
+      text-align:center;
+    }
+    .container{max-width:980px;margin:20px auto;padding:0 16px;}
+    h1{margin:0;font-size:28px}
+    nav{margin-top:8px;font-size:14px;opacity:0.95}
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 380px;
+      gap:18px;
+      align-items:start;
+    }
+    @media (max-width:880px){ .grid{grid-template-columns:1fr} }
+    .card{
+      background:var(--card);
+      padding:18px;
+      border-radius:10px;
+      box-shadow: 0 6px 22px rgba(10,20,40,0.06);
+    }
+    .service-list{display:flex;flex-direction:column;gap:12px}
+    .service{
+      border:1px solid #e6eefb;
+      padding:12px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;
+    }
+    .service input{margin-right:8px}
+    label.service-label{display:flex;align-items:center;gap:8px;cursor:pointer}
+    p.muted{color:var(--muted);font-size:14px;margin:8px 0 0}
+    .calc{display:flex;flex-direction:column;gap:12px}
+    .row{display:flex;gap:8px;align-items:center}
+    .row .wide{flex:1}
+    input[type="number"], input[type="text"], textarea, select{
+      width:100%;
+      padding:10px 12px;border-radius:8px;border:1px solid #d9e6fb;
+      font-size:15px;background:#fff;
+    }
+    .btn{
+      display:inline-block;padding:10px 14px;border-radius:8px;border:0;background:var(--accent);color:#fff;font-weight:600;
+      cursor:pointer;text-decoration:none;
+    }
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(11,116,222,0.12)}
+    .total{
+      font-size:20px;font-weight:700;text-align:right;
+    }
+    footer{margin:28px 0 48px;text-align:center;color:var(--muted);font-size:13px}
+    .small{font-size:13px;color:var(--muted)}
+    .orders-list{max-height:220px;overflow:auto;padding:6px;border-radius:8px;background:#fcfeff;border:1px solid #eef7ff}
+    .order-item{padding:8px;border-bottom:1px dashed #eef6ff}
+    .order-item:last-child{border-bottom:0}
+    .terms{font-size:13px;color:#444;margin-top:10px;background:#fff9; padding:10px;border-radius:8px}
+    .hero{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;
+    }
+    .hero p{margin:6px 0 0;color:#f0f8ff;opacity:0.95}
+    .logo{
+      display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;
+    }
+    .logo .badge{background:#fff;color:var(--accent);padding:6px 8px;border-radius:6px;font-weight:800}
+    .help{font-size:13px;color:var(--muted);margin-top:8px}
+    .modal{
+      position:fixed;left:0;top:0;width:100%;height:100%;display:none;align-items:center;justify-content:center;
+      background:rgba(6,10,20,0.36);
+      z-index:60;
+    }
+    .modal.show{display:flex}
+    .modal .card{max-width:560px;width:92%;}
+    .summary-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f0f6ff}
+    
+    /* New: Floating Writer Button */
+    .writer-login-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--accent);
+        color: #fff;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 50;
+    }
+    .writer-login-btn:hover {
+        background: #0b58c8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="hero">
+        <div>
+          <div class="logo"><span class="badge">NK</span> Notekarr</div>
+          <p>Create notes, assignments & handbooks quickly — priced by page in ₹.</p>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:600">Fast • Affordable • Reliable</div>
+          <div class="small">Starting at ₹5 / page</div>
+        </div>
+      </div>
+      <nav>Home · Services · Order · Terms</nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <section class="card">
+        <h2>Place an order</h2>
+        <p class="small">Pick a service, enter page count and your details. We’ll calculate total instantly.</p>
+
+        <div style="height:12px"></div>
+
+        <form id="orderForm" class="calc" onsubmit="return false;">
+          <div>
+            <div style="font-weight:700;margin-bottom:8px">Choose service</div>
+            <div class="service-list" id="services">
+              <label class="service" title="Notes writing — ₹8 per page">
+                <label class="service-label">
+                  <input type="radio" name="service" value="notes" checked>
+                  <div>
+                    <div style="font-weight:700">Notes writing — ₹8 / page</div>
+                    <div class="small">Well-formatted notes on any topic.</div>
+                  </div>
+                </label>
+                <div style="font-weight:700">₹8</div>
+              </label>
+
+              <label class="service" title="Assignment pages + handbook — ₹12 per page">
+                <label class="service-label">
+                  <input type="radio" name="service" value="assign_handbook">
+                  <div>
+                    <div style="font-weight:700">Assignment pages + Handbook — ₹12 / page</div>
+                    <div class="small">Assignment pages plus short handbook/guide.</div>
+                  </div>
+                </label>
+                <div style="font-weight:700">₹12</div>
+              </label>
+
+              <label class="service" title="Complete assignment from your ideas — ₹5 per page">
+                <label class="service-label">
+                  <input type="radio" name="service" value="complete_from_idea">
+                  <div>
+                    <div style="font-weight:700">Complete assignment from your ideas — ₹5 / page</div>
+                    <div class="small">You give an idea; we complete the assignment.</div>
+                  </div>
+                </label>
+                <div style="font-weight:700">₹5</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="wide">
+              <label for="pages">Number of pages (integer)</label>
+              <input type="number" id="pages" min="1" value="5" />
+            </div>
+            <div style="min-width:120px">
+              <label for="deadline">Deadline (days)</label>
+              <input type="number" id="deadline" min="0" value="3" />
+              <div class="small">0 = standard turnaround</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="wide">
+              <label for="title">Subject / Title</label>
+              <input type="text" id="title" placeholder="e.g., Class 12 Chemistry — Halogen Derivatives" />
+            </div>
+            <div style="min-width:160px">
+              <label for="format">Format</label>
+              <select id="format">
+                <option value="pdf">PDF</option>
+                <option value="doc">DOCX</option>
+                <option value="ppt">PPT (summary)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label for="notes">Notes / Instructions (optional)</label>
+            <textarea id="notes" rows="3" placeholder="Any special instructions, syllabus, or reference links..."></textarea>
+          </div>
+
+          <h3 style="margin:6px 0 0">Your details</h3>
+          <div class="row">
+            <div class="wide">
+              <label for="name">Name</label>
+              <input id="name" type="text" placeholder="Your name" required />
+            </div>
+            <div style="min-width:160px">
+              <label for="phone">Phone / WhatsApp</label>
+              <input id="phone" type="text" placeholder="91xxxxxxxxxx" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="wide">
+              <label for="email">Email</label>
+              <input id="email" type="text" placeholder="you@example.com" />
+            </div>
+            <div style="min-width:160px">
+              <label for="coupon">Coupon (optional)</label>
+              <input id="coupon" type="text" placeholder="coupon code" />
+            </div>
+          </div>
+
+          <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:8px">
+            <div>
+              <div class="small">Price per page: <span id="pricePerPage">₹8</span></div>
+              <div class="small">Subtotal: <span id="subtotal">₹40</span></div>
+            </div>
+
+            <div style="text-align:right">
+              <div class="total" id="total">₹40</div>
+              <div class="small">incl. no tax (demo)</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:12px">
+            <button class="btn" id="placeOrder">Place order (contact me)</button>
+            <button class="btn ghost" id="saveLocal">Save order (local)</button>
+            <button class="btn ghost" id="viewOrders">View saved orders</button>
+          </div>
+
+          <div style="margin-top:8px" class="small">
+            **Note:** All orders will be directed to you via a WhatsApp chat. Local storage is used to keep saved orders.
+          </div>
+
+        </form>
+      </section>
+
+      <aside>
+        <div class="card">
+          <h3>Quick pricing</h3>
+          <ul class="small" style="padding-left:18px">
+            <li>Notes writing — <strong>₹8 / page</strong></li>
+            <li>Assignment pages + handbook — <strong>₹12 / page</strong></li>
+            <li>Complete assignment from your ideas — <strong>₹5 / page</strong></li>
+          </ul>
+
+          <hr style="border:0;border-top:1px solid #f0f6ff;margin:12px 0" />
+
+          <h3>Saved orders</h3>
+          <div class="orders-list" id="ordersList">
+            <div class="small" id="noOrders">No saved orders yet — click "Save order (local)".</div>
+          </div>
+
+          <div style="margin-top:12px">
+            <button class="btn" id="downloadCSV">Download orders (CSV)</button>
+          </div>
+        </div>
+
+        <div style="height:14px"></div>
+
+        <div class="card">
+          <h3>Terms & Ethics</h3>
+          <div class="terms">
+            <p><strong>Please read:</strong> We provide original summarized notes, handbooks and assignment solutions based on your requests. We <strong>do not</strong> provide verbatim copyrighted books or distribute paid copyrighted content. By ordering you agree not to request full, verbatim copies of copyrighted books or paid course material.</p>
+            <p class="small">If you need a specific publisher's content, provide proof of permission or request a summary instead.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      © <span id="year"></span> Notekarr — Built for convenient note & assignment help. — **Contact for Payment: 8983509998**
+    </footer>
+  </main>
+
+  <a href="/writer-portal.html" class="writer-login-btn">
+      Writer Sign-In / Sign-Up
+  </a>
+
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="card">
+      <h3>Order summary</h3>
+      <div id="summaryBody"></div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button class="btn ghost" onclick="closeModal()">Close</button>
+        <a id="whatsappBtn" class="btn" href="#">Confirm via WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -- Configuration --
+    const MY_PHONE_NUMBER = '8983509998'; // Your number for WhatsApp orders
+    const PRICES = {
+      notes: 8,
+      assign_handbook: 12,
+      complete_from_idea: 5
+    };
+
+    // DOM
+    const pagesEl = document.getElementById('pages');
+    const serviceEls = document.getElementsByName('service');
+    const pricePerPageEl = document.getElementById('pricePerPage');
+    const subtotalEl = document.getElementById('subtotal');
+    const totalEl = document.getElementById('total');
+    const placeOrderBtn = document.getElementById('placeOrder');
+    const saveLocalBtn = document.getElementById('saveLocal');
+    const viewOrdersBtn = document.getElementById('viewOrders');
+    const ordersList = document.getElementById('ordersList');
+    const noOrders = document.getElementById('noOrders');
+    const downloadCSVBtn = document.getElementById('downloadCSV');
+    const modal = document.getElementById('modal');
+    const summaryBody = document.getElementById('summaryBody');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+
+    // init
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    function getSelectedService(){
+      for (const s of serviceEls) if (s.checked) return s.value;
+      return 'notes';
+    }
+
+    function formatINR(n){
+      return '₹' + Number(n).toLocaleString('en-IN', {maximumFractionDigits:0});
+    }
+
+    function calc(){
+      const service = getSelectedService();
+      const perPage = PRICES[service];
+      const pages = Math.max(1, Math.floor(Number(pagesEl.value) || 1));
+      let subtotal = perPage * pages;
+
+      // optional coupon logic (basic)
+      const coupon = (document.getElementById('coupon').value || '').trim().toLowerCase();
+      if(coupon === 'first10') subtotal = Math.round(subtotal * 0.9);
+
+      // show
+      pricePerPageEl.textContent = formatINR(perPage) + ' / page';
+      subtotalEl.textContent = formatINR(subtotal);
+      totalEl.textContent = formatINR(subtotal);
+      return { service, perPage, pages, subtotal };
+    }
+
+    // update when user changes things
+    pagesEl.addEventListener('input', calc);
+    for(const s of serviceEls) s.addEventListener('change', calc);
+    document.getElementById('coupon').addEventListener('input', calc);
+    calc();
+
+    // Build order object
+    function buildOrder(){
+      const {service, perPage, pages, subtotal} = calc();
+      return {
+        id: 'ORD' + Date.now(),
+        service,
+        perPage,
+        pages,
+        subtotal,
+        title: document.getElementById('title').value.trim(),
+        format: document.getElementById('format').value,
+        instructions: document.getElementById('notes').value.trim(),
+        name: document.getElementById('name').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        date: new Date().toISOString()
+      };
+    }
+
+    // Place order (prepares WhatsApp message)
+    placeOrderBtn.addEventListener('click', function(){
+      const order = buildOrder();
+      if(!order.name) {
+        alert('Please enter your name before placing the order.');
+        return;
+      }
+
+      // prepare summary
+      const serviceNames = {
+        notes: 'Notes writing',
+        assign_handbook: 'Assignment + Handbook',
+        complete_from_idea: 'Complete assignment (from your ideas)'
+      };
+
+      // Prepare message body for WhatsApp
+      let whatsappBody = `Hello Notekarr,\n\nI would like to place a new order:\n\n*Order ID:* ${order.id}\n*Service:* ${serviceNames[order.service]}\n*Pages:* ${order.pages}\n*Total Price:* ₹${order.subtotal}\n*Title/Subject:* ${order.title}\n*Deadline (days):* ${document.getElementById('deadline').value}\n\n*Instructions:*\n${order.instructions || 'None'}\n\n*My Details:*\nName: ${order.name}\nPhone: ${order.phone}\nEmail: ${order.email}\n\nPlease confirm payment and delivery timeline. Thank you.`;
+
+
+      // show modal with summary and WhatsApp link
+      summaryBody.innerHTML = `
+        <div class="summary-row"><div>Order ID</div><div><strong>${order.id}</strong></div></div>
+        <div class="summary-row"><div>Service</div><div>${serviceNames[order.service]}</div></div>
+        <div class="summary-row"><div>Pages</div><div>${order.pages}</div></div>
+        <div class="summary-row"><div>Price/page</div><div>₹${order.perPage}</div></div>
+        <div class="summary-row"><div>Total</div><div>**₹${order.subtotal}**</div></div>
+        <div style="padding:8px 0">**Customer:** ${order.name} ${order.phone?'| '+order.phone:''}</div>
+        <div style="padding:8px 0">**Title:** ${order.title || '—'}</div>
+        <div style="padding:8px 0">**Instructions:**<div class="small">${order.instructions || '—'}</div></div>
+      `;
+      modal.classList.add('show');
+
+      // prepare WhatsApp URL
+      const whatsappURL = `https://wa.me/${MY_PHONE_NUMBER}?text=${encodeURIComponent(whatsappBody)}`;
+      whatsappBtn.href = whatsappURL;
+      whatsappBtn.setAttribute('target','_blank');
+    });
+
+    function closeModal(){ modal.classList.remove('show'); }
+    modal.addEventListener('click', function(e){ if(e.target === modal) closeModal(); });
+
+    // Save order locally (rest of the functions remain the same)
+    saveLocalBtn.addEventListener('click', function(){
+      const order = buildOrder();
+      let arr = JSON.parse(localStorage.getItem('write_orders_v1') || '[]');
+      arr.unshift(order);
+      localStorage.setItem('write_orders_v1', JSON.stringify(arr));
+      alert('Order saved locally. Use "View saved orders" to see it.');
+      renderOrders();
+    });
+
+    viewOrdersBtn.addEventListener('click', renderOrders);
+
+    function renderOrders(){
+      const arr = JSON.parse(localStorage.getItem('write_orders_v1') || '[]');
+      ordersList.innerHTML = '';
+      if(!arr.length){
+        ordersList.appendChild(noOrders);
+        return;
+      }
+      arr.slice(0,50).forEach(o=>{
+        const d = document.createElement('div');
+        d.className = 'order-item';
+        d.innerHTML = `<div style="font-weight:700">${o.title || '—'} <span style="font-weight:600;color:var(--muted)">(${o.id})</span></div>
+          <div class="small">Service: ${o.service} • Pages: ${o.pages} • Total: ₹${o.subtotal} • ${new Date(o.date).toLocaleString()}</div>
+          <div class="small">Customer: ${o.name} ${o.phone? '| ' + o.phone : ''}</div>`;
+        ordersList.appendChild(d);
+      });
+    }
+    renderOrders();
+
+    // Download CSV
+    downloadCSVBtn.addEventListener('click', function(){
+      const arr = JSON.parse(localStorage.getItem('write_orders_v1') || '[]');
+      if(!arr.length){ alert('No orders to download.'); return; }
+      const header = ['id','date','service','pages','price_per_page','total','title','name','phone','email','instructions'];
+      const rows = arr.map(o => [
+        o.id, o.date, o.service, o.pages, o.perPage, o.subtotal,
+        `"${(o.title||'').replace(/"/g,'""')}"`, `"${(o.name||'').replace(/"/g,'""')}"`, o.phone||'', o.email||'', `"${(o.instructions||'').replace(/"/g,'""')}"`
+      ].join(','));
+      const csv = header.join(',') + '\n' + rows.join('\n');
+      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url;
+      a.download = 'notekarr_orders.csv'; document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    });
+
+    // initial calc
+    calc();
+  </script>
+</body>
+</html>
